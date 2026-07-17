@@ -1,10 +1,12 @@
 """Capture ECMWF open-data IFS ENS 2 m temperature forecasts at klymot stations.
 
-Each 00z run of the 15-day IFS ensemble (stream ``enfo``) is downloaded from the
-ECMWF open-data AWS mirror (all 51 members' 2t fields via byte-range requests),
-sampled at every station in the www.klymot.com index, and reduced to ensemble
-mean (``em``), ensemble standard deviation (``es``) and control (``cf``) daily
-means per lead day 1-15. The same values are written along two axes:
+Each 00z run of the 15-day IFS ensemble (stream ``enfo``, whose open data
+carries only the 50 perturbed members' 2t — no control) and of the 10-day HRES
+run (stream ``oper``) is downloaded from the ECMWF open-data AWS mirror via
+byte-range requests, sampled at every station in the www.klymot.com index, and
+reduced to ensemble mean (``em``), ensemble standard deviation (``es``) and
+HRES (``hres``) daily means per lead day 1-15. The same values are written
+along two axes:
 
 - ``docs/data/date/<init_date>.csv`` — every station for one run (immutable),
 - ``docs/data/station/<id[:2]>/<id>.csv`` — every run for one station (one row
@@ -160,7 +162,7 @@ def write_date_csv(
     path = DOCS_DATA / "date" / f"{date.isoformat()}.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["station_id"] + VALUE_COLUMNS)
         for i, station in enumerate(stations):
             row = [station["id"]] + [
@@ -238,7 +240,7 @@ def write_stations_csv(stations: list[dict]) -> None:
         return  # frozen: defines the row order of every date/ CSV
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(["station_id", "name", "lat", "lon"])
         for s in stations:
             writer.writerow([s["id"], s["name"], s["lat"], s["lon"]])
@@ -290,11 +292,17 @@ def main() -> int:
         metavar="N",
         help="also try the N previous days still on the mirror (default 3)",
     )
+    parser.add_argument(
+        "--source",
+        default="aws",
+        choices=["aws", "ecmwf", "azure"],
+        help="open-data mirror to download from (default aws)",
+    )
     args = parser.parse_args()
 
     stations = load_stations()
     write_stations_csv(stations)
-    client = Client(source="aws")
+    client = Client(source=args.source)
     if args.date:
         newest = dt.date.fromisoformat(args.date)
     else:

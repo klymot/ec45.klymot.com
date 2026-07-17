@@ -1,0 +1,19 @@
+{
+ "description": "2 m temperature forecasts from the ECMWF open-data IFS ensemble (stream enfo, 00z run, 15-day horizon), sampled at the GHCN station locations shown on www.klymot.com and reduced to daily means per lead day 1-15.",
+ "attribution": "Contains modified ECMWF open data, \u00a9 European Centre for Medium-Range Weather Forecasts (ECMWF), CC-BY-4.0.",
+ "license": "CC-BY-4.0",
+ "products": {
+  "em": "ENS ensemble mean (50 perturbed members)",
+  "es": "ENS ensemble standard deviation (50 perturbed members)",
+  "hres": "HRES deterministic forecast (10-day horizon; d11-d15 empty)"
+ },
+ "axes": {
+  "date/<init_date>.csv": "all stations for one run",
+  "station/<id[:2]>/<id>.csv": "all runs for one station"
+ },
+ "lead_day_definition": "lead day L = mean of the four 6-hourly valid times in the 24 h ending 00z on init+L days (steps 24(L-1)+6/12/18/24)",
+ "units": "deci-degrees Celsius (divide by 10)",
+ "station_count": 27961,
+ "stations": "stations.csv",
+ "runs": "runs.txt"
+}
