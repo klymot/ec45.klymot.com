@@ -1,0 +1,5 @@
+*.grib2
+*.grib2.*.idx
+*.pyc
+__pycache__/
+.DS_Store

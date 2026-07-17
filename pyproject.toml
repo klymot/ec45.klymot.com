@@ -1,0 +1,9 @@
+[project]
+name = "ec45-klymot-com"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "eccodes>=2.47.0",
+    "ecmwf-opendata>=0.3.31",
+    "numpy>=2.5.1",
+]
