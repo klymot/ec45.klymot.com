@@ -18,23 +18,36 @@ permissions:
 jobs:
   capture:
     runs-on: ubuntu-latest
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Capture available runs
-        run: uv run python code/capture.py --backfill 3
-
-      - name: Commit new data
+      - name: Capture and commit each available run
+        # One date per invocation, committed and pushed as soon as it lands, so
+        # a throttled mirror (S3 "503 Slow Down") stalling a later date can no
+        # longer discard dates already captured when the job hits its limit.
+        # Each date gets its own timeout; 4 x 80 min stays under the job's.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/data
-          if git diff --cached --quiet; then
-            echo "no new data"
-          else
-            git commit -m "Capture $(date -u +%F) ENS point data"
-            git push
-          fi
+          status=1
+          for n in 3 2 1 0; do
+            day=$(date -u -d "-$n day" +%F)
+            if timeout 80m uv run python code/capture.py --date "$day" --backfill 0; then
+              status=0
+            else
+              echo "::warning::$day not captured (exit $?)"
+            fi
+            git add docs/data
+            if git diff --cached --quiet; then
+              echo "$day: no new data"
+            else
+              git commit -m "Capture $day ENS point data"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            fi
+          done
+          exit $status
