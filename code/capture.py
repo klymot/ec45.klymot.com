@@ -295,7 +295,7 @@ def main() -> int:
     parser.add_argument(
         "--source",
         default="aws",
-        choices=["aws", "ecmwf", "azure"],
+        choices=["aws", "google", "ecmwf", "azure"],
         help="open-data mirror to download from (default aws)",
     )
     args = parser.parse_args()

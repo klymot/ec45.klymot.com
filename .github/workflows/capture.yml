@@ -30,13 +30,15 @@ jobs:
         # a throttled mirror (S3 "503 Slow Down") stalling a later date can no
         # longer discard dates already captured when the job hits its limit.
         # Each date gets its own timeout; 4 x 80 min stays under the job's.
+        # Google mirror: AWS throttled every request (503 Slow Down) on
+        # 2026-10-24 while Google sustained ~800 kB/s (~45 min per date).
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           status=1
           for n in 3 2 1 0; do
             day=$(date -u -d "-$n day" +%F)
-            if timeout 80m uv run python code/capture.py --date "$day" --backfill 0; then
+            if timeout 80m uv run python code/capture.py --date "$day" --backfill 0 --source google; then
               status=0
             else
               echo "::warning::$day not captured (exit $?)"
