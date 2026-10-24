@@ -3,7 +3,10 @@ name = "ec45-klymot-com"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
-    "eccodes>=2.47.0",
-    "ecmwf-opendata>=0.3.31",
-    "numpy>=2.5.1",
+    "eccodes>=2.50.0",
+    # eccodes declares this on Linux/macOS, but uv reads the Windows wheel's
+    # metadata (which omits it), so the binary library must be listed here.
+    "eccodeslib>=2.50.0; platform_system != 'Windows'",
+    "ecmwf-opendata>=0.3.35",
+    "numpy>=2.5.4",
 ]
